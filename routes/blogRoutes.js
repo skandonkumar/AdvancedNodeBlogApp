@@ -34,8 +34,5 @@ module.exports = app => {
     } catch (err) {
       res.send(400, err);
     }
-
-    // Clear the cache after saving a new blog
-    clearHash(req.user.id);
   });
 };
