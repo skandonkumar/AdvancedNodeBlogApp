@@ -1,53 +1,43 @@
-const puppeteer = require('puppeteer');
-const sessionFactory = require("./factories/sessionFactory")
-const userFactory = require("./factories/userFactory")
+// const puppeteer = require('puppeteer');
+const Page = require("./helpers/page")
 
-let browser, page
+let page
 
 beforeEach(async ()=>{
-    browser = await puppeteer.launch({
-        headless: false, // Keep visible for debugging
-    });
 
-    console.log("Browser launched, creating new page...");
-    page = await browser.newPage();
+    page = await Page.build()
 
-    console.log("Navigating to localhost:3000...");
     await page.goto('http://localhost:3000', { waitUntil: 'networkidle2' });
 })
 
 afterEach(async ()=>{
-    // console.log("Closing browser...");
-    // await browser.close();
+    await page.close();
 })
 
-test('The header has the correct test', async () => {
+test('The header has the correct text', async () => {
     await page.waitForSelector('a.brand-logo');
 
-    const text = await page.$eval('a.brand-logo', el => el.innerHTML);
+    const text = await page.getContentsOf('a.brand-logo');
+
 
     expect(text).toEqual("Blogster");
 
 });
 
-// test('Login flow', async()=>{
-//     await page.click('.right a');
+test('Login flow', async()=>{
+    await page.click('.right a');
 
-//     const url = await page.url()
-// })
+    const url = await page.url()
 
-test.only('When signed in, shows logout button', async () => {
+    expect(url).toMatch(/accounts\.google\.com/)
+})
+
+test('When signed in, shows logout button', async () => {
     // const id = "67a92abf3dbd3ce0a4d5496b";
-    const user = await userFactory();
-    const {session, sig} = sessionFactory(user)
-   
-
-    await page.setCookie({ name: 'session', value: session });
-    await page.setCookie({ name: 'session.sig', value: sig });
-    await page.goto('http://localhost:3000', { waitUntil: 'networkidle2' });
+    await page.login()
     
 
-    page.$eval('a[href="/auth/logout"]', el => el.innerHTML)
+    page.getContentsOf('a[href="/auth/logout"]')
         .then(text => {
             expect(text).toEqual('Logout');
         })
