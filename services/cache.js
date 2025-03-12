@@ -1,4 +1,3 @@
-const { clear } = require('console')
 const mongoose = require('mongoose')
 const redis = require('redis')
 const util = require('util')
@@ -32,8 +31,6 @@ mongoose.Query.prototype.exec = async function(){
 
     if(cacheValue) {
         const doc = JSON.parse(cacheValue)
-
-        console.log("Returning from cache")
 
         return Array.isArray(doc) ? doc.map(d => new this.model(d)) : new this.model(doc)
     }
